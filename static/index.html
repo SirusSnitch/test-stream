@@ -1,17 +1,46 @@
 <!DOCTYPE html>
 <html>
+<head>
+  <meta charset="UTF-8">
+  <title>🔥 YOLO26 Live Stream</title>
+</head>
 <body>
 <h2>🔥 YOLO26 Live Stream</h2>
-<img id="stream" width="800"/>
+<img id="stream" width="800" />
 
 <script>
-const ws = new WebSocket("ws://localhost:8000/ws");
-
+const ws = new WebSocket(`ws://${location.host}/ws`);
 ws.binaryType = "arraybuffer";
 
+let oldUrl = null;
+
+ws.onopen = () => {
+    console.log("✅ WebSocket connected to:", ws.url);
+};
+
+ws.onerror = (err) => {
+    console.error("❌ WebSocket error:", err);
+};
+
+ws.onclose = (event) => {
+    console.warn("⚠️ WebSocket closed:", event.code, event.reason);
+};
+
 ws.onmessage = (event) => {
+    console.log("📥 Received frame, size:", event.data.byteLength, "bytes");
+
     const blob = new Blob([event.data], { type: "image/jpeg" });
-    document.getElementById("stream").src = URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
+
+    const img = document.getElementById("stream");
+    img.src = url;
+
+    if (oldUrl) {
+        URL.revokeObjectURL(oldUrl);
+    }
+    oldUrl = url;
+
+    console.log("🖼️ Updated image source");
 };
 </script>
 </body>
